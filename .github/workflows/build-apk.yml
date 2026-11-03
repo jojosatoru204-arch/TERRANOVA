@@ -1,0 +1,77 @@
+name: Build TERRANOVA Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'game.zip'
+      - '.github/workflows/build-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Extract HTML5 game
+        run: |
+          test -f game.zip || (echo "Upload the original project as game.zip in the repository root." && exit 1)
+          mkdir -p extracted www
+          unzip -q game.zip -d extracted
+          INDEX="$(find extracted -type f -name index.html -print -quit)"
+          test -n "$INDEX" || (echo "index.html was not found inside game.zip" && exit 1)
+          GAME_DIR="$(dirname "$INDEX")"
+          cp -R "$GAME_DIR"/. www/
+          test -f www/index.html
+
+      - name: Install Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core@7 @capacitor/android@7
+          npm install --save-dev @capacitor/cli@7
+
+      - name: Configure app
+        run: |
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.kaisxstudio.terranova",
+            "appName": "TERRANOVA",
+            "webDir": "www"
+          }
+          EOF
+
+      - name: Generate Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TERRANOVA-Android-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
