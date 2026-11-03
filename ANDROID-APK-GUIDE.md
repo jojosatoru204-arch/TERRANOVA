@@ -1,20 +1,29 @@
-# TERRANOVA — Android APK build
+# TERRANOVA — Build Android APK
 
-The repository now contains a GitHub Actions workflow at `.github/workflows/build-apk.yml`.
+The repository contains a GitHub Actions workflow at `.github/workflows/build-apk.yml`.
 
-## Add the original game ZIP
+## Required source archive
 
-1. Upload the original HTML5 project archive to the repository root.
-2. Name the uploaded archive exactly `game.zip`.
-3. Commit the upload.
-4. Open the **Actions** tab and select **Build TERRANOVA Android APK**.
-5. If it did not start automatically, choose **Run workflow**.
-6. When the run succeeds, open it and download the artifact named **TERRANOVA-Android-APK**.
-7. Extract the artifact ZIP and install `app-debug.apk` on an Android device.
+Upload the original HTML5 project ZIP to the repository root and name it exactly `game.zip`. It must contain `index.html` and the assets/scripts used by that page.
 
-## Notes
+## Upload from Android
 
-- This creates a debug APK for testing, not a Play Store release build.
-- The workflow expects the archive to contain an `index.html` file and its referenced assets.
-- The game is copied into a Capacitor WebView. Browser-only features, remote APIs, and online multiplayer backends still need their own compatible configuration.
-- GitHub Actions usage is subject to the account's included minutes and repository settings.
+1. Open the repository.
+2. Choose **Add file → Upload files**.
+3. Select the original game ZIP from your phone.
+4. Ensure its name is `game.zip` and it is at the repository root.
+5. Commit the upload.
+
+## Build and download
+
+Uploading `game.zip` starts the build automatically. You can also open **Actions → Build TERRANOVA Android APK → Run workflow**. When every build step succeeds, open the run and download the `TERRANOVA-Android-APK` artifact. Extract it and install `app-debug.apk`.
+
+## Build information
+
+- App name: TERRANOVA
+- Application ID: `com.kaisxstudio.terranova`
+- Packaging: Capacitor 7
+- Build: debug APK for testing, not a Play Store release
+- CI environment: Node.js 22, Java 21, Android API 35
+
+A successful workflow run is required before an APK exists. Packaging the HTML5 files does not itself provide an online multiplayer server; online features need a separately hosted backend and correct configuration.
